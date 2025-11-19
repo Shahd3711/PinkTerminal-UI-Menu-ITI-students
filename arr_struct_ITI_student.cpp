@@ -3,7 +3,7 @@ using namespace std;
 #define el '\n'
 #define BATGURL37 ios_base::sync_with_stdio(0); cin.tie(0);
 struct ITI_Students 
-{
+{ 
     char name[50];
     int age;
     char track[50];
