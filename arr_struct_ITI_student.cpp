@@ -36,10 +36,10 @@ int main()
     {
         cout<<"===Student # "<<i+1<<"==="<<el;
         cout<<"Student #"<<i+1<<el;
-        cout<<"Student Name:        "<<students[i].name<<el;
-        cout<<"🎂 Age:         "<<students[i].age<<el;
-        cout<<"📚 Track:       "<<students[i].track<<el;
-        cout<<"👨‍🏫 Instructor: "<<students[i].instructor<<el;
+        cout<<"Student Name: "<<students[i].name<<el;
+        cout<<"Age:         "<<students[i].age<<el;
+        cout<<"Track:       "<<students[i].track<<el;
+        cout<<"Instructor:  "<<students[i].instructor<<el;
     }
     return 0;
 }
