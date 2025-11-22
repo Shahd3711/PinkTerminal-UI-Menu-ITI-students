@@ -1,34 +1,33 @@
 #ifndef PIX_H
 #define PIX_H
-
 #include <string>
 #include <utility>
-#include <vector>
 #include <termios.h>
-using namespace std;
+#include <cstdio>
 extern struct termios orig_termios;
-
-struct Student {
-    string name;
+#define MAX_STUDENTS 100
+#define MAX_NAME_LENGTH 50
+#define MAX_TRACK_LENGTH 50
+#define MAX_INSTRUCTOR_LENGTH 50
+using namespace std;
+struct Student 
+{
+    char name[MAX_NAME_LENGTH];
     int age;
-    string track;
-    string instructor;
+    char track[MAX_TRACK_LENGTH];
+    char instructor[MAX_INSTRUCTOR_LENGTH];
 };
-
 void clearScreen();
-void setColor(const std::string& colorName);
+void setColor(const string& colorName);
 void gotoXY(int x, int y);
-std::pair<int,int> getTerminalSize();
-void printCenter(const std::string& text, const std::string& color="white");
-int readKey();
-void waitForRawEnter();
+pair<int,int> getTerminalSize();
+void printCenter(const char* text, const std::string& color="white");
+int readKey(); 
+void waitForRawEnter(); 
 void flushInput();
 void enableRawMode();
 void disableRawMode();
-
-void drawMenu(const std::string menu[], int menuSize, int selected);
-
+void drawMenu(const string menu[], int menuSize, int selected);
 Student getStudentInput();
-void displayStudents(const std::vector<Student>& students);
-
+void displayStudents(const Student students[], int count);
 #endif
