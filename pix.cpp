@@ -4,14 +4,14 @@
 #include <unistd.h>
 #include <limits> 
 #include <sstream> 
+#include <cstdio>
+#include <cstring>
 struct termios orig_termios;
 using namespace std;
-
 void clearScreen() 
 {
     cout<<"\033[2J\033[1;1H";
 }
-// ... (بقية الدوال: readKey, setColor, gotoXY, getTerminalSize, printCenter, waitForRawEnter, flushInput, enableRawMode, disableRawMode) ...
 int readKey() 
 {
     char c;
@@ -19,24 +19,21 @@ int readKey()
     if(c=='\033')
     {
         char seq[2];
-        if(read(STDIN_FILENO, &seq[0], 1)!=1)return 27;
+        if(read(STDIN_FILENO, &seq[0], 1)!=1)return 27; 
         if(read(STDIN_FILENO, &seq[1], 1)!=1)return 27;
-
         if (seq[0] == '[')
         {
             switch (seq[1]) 
             {
-                case 'A': return 1001;//Up
-                case 'B': return 1002;//Down
-                case 'C': return 1003;//Right
-                case 'D': return 1004;//Left
+                case 'A': return 1001;
+                case 'B': return 1002;
+                case 'C': return 1003;
+                case 'D': return 1004;
             }
         }
-        return 27;//Esc
+        return 27;
     }
-    //Return/Enter
-    if(c==13) 
-        c='\n'; 
+    if(c==13)c='\n'; 
     return c;
 }
 void setColor(const string& colorName) 
@@ -55,10 +52,10 @@ pair<int,int> getTerminalSize()
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     return{w.ws_col, w.ws_row};
 }
-void printCenter(const string& text, const string& color) 
+void printCenter(const char* text, const string& color) 
 {
     auto[cols, rows]=getTerminalSize();
-    int x=cols/2-text.size()/2;
+    int x=cols/2-strlen(text)/2;
     int y=rows/2;
     gotoXY(x, y);
     setColor(color);
@@ -75,7 +72,7 @@ void waitForRawEnter()
     while(!exitLoop)
     {
         int key=readKey();
-        if(key=='\n'||key==27||key==127)//del, esc, enter
+        if(key=='\n'||key==27||key==127)
             exitLoop=1;
     }
 }
@@ -88,7 +85,6 @@ void enableRawMode()
 {
     tcgetattr(STDIN_FILENO, &orig_termios);
     struct termios raw=orig_termios;
-    //Raw Mode Settings
     raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
     raw.c_oflag &= ~(OPOST);
     raw.c_cflag |= (CS8);
@@ -97,7 +93,6 @@ void enableRawMode()
     raw.c_cc[VTIME] = 0; 
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
-
 void disableRawMode() 
 {
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
@@ -116,40 +111,43 @@ void drawMenu(const string menu[], int menuSize, int selected)
     }
     cout<<flush;
 }
-
 Student getStudentInput() {
     disableRawMode(); 
     Student s;
     clearScreen();
     cout << "--- ✨ Enter New Student Data ✨ ---" << endl;
-    
-    cout << "Enter Student Name: ";
-    getline(cin, s.name);
-    
-    string ageStr;
-    bool validAge = false;
+    while(1){
+        cout << "Enter Student Name: ";
+        cin.getline(s.name, MAX_NAME_LENGTH);
+        if(strlen(s.name)>0)break;
+        cout<<"⚠️ Name cannot be empty!\n";
+    }
+    string ageStr; 
+    bool validAge=0;
     while (!validAge) {
         cout << "Enter Age: ";
         getline(cin, ageStr);
+        if(ageStr.empty()){cout<<"⚠️ Age cannot be empty!\n";continue;}
         stringstream ss(ageStr);
-        if (ss >> s.age) {
-            validAge = true;
-        } else {
-            cout << "Invalid age format. Please enter a number." << endl;
-        }
+        if (ss >> s.age) validAge=1;
+        else cout << "Invalid age format.\n";
     }
-    
-    cout << "Enter Track Name: ";
-    getline(cin, s.track);
-    
-    cout << "Enter Instructor Name: ";
-    getline(cin, s.instructor);
-    
+    while(1){
+        cout << "Enter Track Name: ";
+        cin.getline(s.track, MAX_TRACK_LENGTH);
+        if(strlen(s.track)>0)break;
+        cout<<"⚠️ Track cannot be empty!\n";
+    }
+    while(1){
+        cout << "Enter Instructor Name: ";
+        cin.getline(s.instructor, MAX_INSTRUCTOR_LENGTH);
+        if(strlen(s.instructor)>0)break;
+        cout<<"⚠️ Instructor cannot be empty!\n";
+    }
     enableRawMode();
     return s;
 }
-
-void displayStudents(const vector<Student>& students) {
+void displayStudents(const Student students[], int count) {
     auto[cols, rows]=getTerminalSize();
     clearScreen();
     setColor("pink_bright");
@@ -157,32 +155,22 @@ void displayStudents(const vector<Student>& students) {
     gotoXY(cols/2-15, lineY++);
     cout<<"--- 👸 ITI Students List 👸 ---";
     lineY++;
-    
-    if(students.empty()) {
+    if(count == 0) {
         printCenter("No students added yet!", "pink_light");
     } else {
-        gotoXY(5, lineY); 
-        cout << "Name";
-        gotoXY(30, lineY); 
-        cout << "Age";
-        gotoXY(40, lineY); 
-        cout << "Track";
-        gotoXY(70, lineY++); 
-        cout << "Instructor";
-        
+        gotoXY(5, lineY); cout << "Name";
+        gotoXY(30, lineY); cout << "Age";
+        gotoXY(40, lineY); cout << "Track";
+        gotoXY(70, lineY++); cout << "Instructor";
         gotoXY(5, lineY++); 
         for(int i=0; i<cols-10; i++) cout<<"-";
-        
         setColor("pink_light");
-        for(const auto& s : students) {
-            gotoXY(5, lineY); 
-            cout << s.name;
-            gotoXY(30, lineY); 
-            cout << s.age;
-            gotoXY(40, lineY); 
-            cout << s.track;
-            gotoXY(70, lineY++); 
-            cout << s.instructor;
+        for(int i=0; i<count; i++) 
+        {
+            gotoXY(5, lineY); cout << students[i].name;
+            gotoXY(30, lineY); cout << students[i].age;
+            gotoXY(40, lineY); cout << students[i].track;
+            gotoXY(70, lineY++); cout << students[i].instructor;
         }
     }
     setColor("white");
