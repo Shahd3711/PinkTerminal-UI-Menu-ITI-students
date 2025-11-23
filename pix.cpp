@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cctype>
+#include <algorithm>
 struct termios orig_termios;
 using namespace std;
 void clearScreen()
@@ -119,6 +120,23 @@ bool isValidName(const char* name)
 		if(!isalpha(name[i])&&name[i]!=' ')
 			return false;
 	}
+	string s(name);
+	s.erase(remove_if(s.begin(), s.end(), ::isspace), s.end());
+	if(s.empty()) return false;
+	
+	return true;
+}
+bool isValidInstructorName(const char* name)
+{
+	for(int i=0; i<strlen(name); i++)
+	{
+		if(isdigit(name[i]))
+			return false;
+	}
+	string s(name);
+	s.erase(remove_if(s.begin(), s.end(), ::isspace), s.end());
+	if(s.empty()) return false;
+	
 	return true;
 }
 Student getStudentInput() {
@@ -130,8 +148,11 @@ Student getStudentInput() {
 		cout << "Enter Student Name: ";
 		cin.getline(s.name, MAX_NAME_LENGTH);
 		if(strlen(s.name)>0&&isValidName(s.name))break;
-		if(strlen(s.name)==0)cout<<"⚠️ Name cannot be empty!\n";
-		else cout<<"⚠️ Name contains invalid characters (numbers or symbols)!\n";
+		
+		if(strlen(s.name)==0)
+			cout<<"⚠️ Name cannot be empty!\n";
+		else 
+			cout<<"⚠️ Invalid Name: Must contain letters and not be spaces only.\n";
 	}
 	string ageStr;
 	bool validAge=0;
@@ -140,20 +161,45 @@ Student getStudentInput() {
 		getline(cin, ageStr);
 		if(ageStr.empty()){cout<<"⚠️ Age cannot be empty!\n";continue;}
 		stringstream ss(ageStr);
-		if (ss >> s.age) validAge=1;
+		if (ss >> s.age) {
+			if(s.age >= 20 && s.age <= 30) {
+				validAge=1;
+			} else {
+				cout << "⚠️ Age must be between 20 and 30.\n";
+			}
+		}
 		else cout << "Invalid age format.\n";
 	}
+	// التعديل هنا: التراك مسموح به أي شيء (حروف، أرقام، رموز) ما عدا أن يكون فارغاً أو مسافات فقط
 	while(1){
 		cout << "Enter Track Name: ";
 		cin.getline(s.track, MAX_TRACK_LENGTH);
-		if(strlen(s.track)>0)break;
-		cout<<"⚠️ Track cannot be empty!\n";
+		
+		if(strlen(s.track) == 0) {
+			cout<<"⚠️ Track cannot be empty!\n";
+			continue;
+		}
+		string temp_track(s.track);
+		temp_track.erase(remove_if(temp_track.begin(), temp_track.end(), ::isspace), temp_track.end());
+		
+		if(temp_track.empty()) {
+			cout<<"⚠️ Track name cannot be spaces only!\n";
+			continue;
+		}
+		
+		break;
 	}
+	// التعديل هنا: استخدام دالة isValidInstructorName (تمنع الأرقام وتسمح بالرموز الأخرى)
 	while(1){
 		cout << "Enter Instructor Name: ";
 		cin.getline(s.instructor, MAX_INSTRUCTOR_LENGTH);
-		if(strlen(s.instructor)>0)break;
-		cout<<"⚠️ Instructor cannot be empty!\n";
+		
+		if(strlen(s.instructor)>0&&isValidInstructorName(s.instructor))break;
+		
+		if(strlen(s.instructor)==0)
+			cout<<"⚠️ Instructor cannot be empty!\n";
+		else 
+			cout<<"⚠️ Invalid Instructor Name: Cannot contain numbers or be spaces only.\n";
 	}
 	enableRawMode();
 	return s;
