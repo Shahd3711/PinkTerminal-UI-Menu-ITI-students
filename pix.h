@@ -29,6 +29,7 @@ void enableRawMode();
 void disableRawMode();
 void drawMenu(const string menu[], int menuSize, int selected);
 bool isValidName(const char* name);
+bool isValidInstructorName(const char* name);
 Student getStudentInput();
 void displayStudents(const Student students[], int count);
 #endif
