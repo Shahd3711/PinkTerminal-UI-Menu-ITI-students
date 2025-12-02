@@ -19,7 +19,7 @@ void Input(int** arr, int rows, int cols)
         for(int j=0; j<cols; j++) 
         {
             cout<<"  Element ["<<i<<"]["<<j<<"]: ";
-            cin>>arr[i][j];
+            cin>>*(*(arr+i)+j);
         }
     }
 }
